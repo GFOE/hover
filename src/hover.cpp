@@ -158,14 +158,21 @@ public:
         p11::AngleRadiansZeroCentered bearing(atan2(target_local.y, target_local.x));
         
         float target_speed = 0.0;
-        if (range >= m_maximum_distance)
+
+	// TODO: Hardcoded for now - parameterize!
+	float completed_threshold = m_minimum_distance + 2.0;
+	if (range < completed_threshold)
+	  {
+	    target_speed = 0.0;
+	  }
+        else if (range >= m_maximum_distance)
             target_speed = m_maximum_speed;
         else if (range > m_minimum_distance)
         {
             float p = (range-m_minimum_distance)/(m_maximum_distance-m_minimum_distance);
             target_speed = p*m_maximum_speed;
         }
-          
+	
         hover::hoverFeedback feedback;
         feedback.range = range;
         feedback.bearing = p11::AngleDegrees(bearing).value();
@@ -174,12 +181,21 @@ public:
         m_action_server.publishFeedback(feedback);
           
         ros::Time now = ros::Time::now();
-        
+
+	// TODO: Parameterize this control gain
+	float kp_yaw = 0.25;
         geometry_msgs::TwistStamped cmd_vel;
         cmd_vel.header.stamp = now;
-        cmd_vel.twist.angular.z = bearing.value();
+        cmd_vel.twist.angular.z = kp_yaw * bearing.value();
         cmd_vel.twist.linear.x = target_speed;
         m_cmd_vel_pub.publish(cmd_vel);
+
+	if (range < completed_threshold)
+	  {
+	    hover::hoverResult result;
+	    result.ok = true;
+	    m_action_server.setSucceeded(result);
+	  }
       }
       catch (tf2::TransformException &ex)
       {
