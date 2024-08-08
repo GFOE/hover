@@ -149,7 +149,8 @@ public:
     {
       try
       {
-        auto t = m_transforms().lookupTransform(m_base_frame, m_map_frame, ros::Time(0));
+        auto t = m_transforms()->lookupTransform(m_base_frame, m_map_frame, ros::Time(0));
+        //auto t = m_transforms().lookupTransform(m_base_frame, m_map_frame, ros::Time(0));
         
         geometry_msgs::Point target_local;
         tf2::doTransform(m_target_map,target_local,t);
