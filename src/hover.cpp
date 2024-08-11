@@ -28,7 +28,7 @@ public:
     ros::NodeHandle nh_private("~");
 
     nh_private.param<std::string>("map_frame", m_map_frame, "map");
-    nh_private.param<std::string>("base_frame", m_base_frame, "base_link");
+    nh_private.param<std::string>("base_frame", m_base_frame, "annie/base_link");
 
     m_config_server.setCallback(std::bind(&Hover::reconfigureCallback, this,  std::placeholders::_1, std::placeholders::_2));
       
@@ -187,6 +187,7 @@ public:
 	float kp_yaw = 0.25;
         geometry_msgs::TwistStamped cmd_vel;
         cmd_vel.header.stamp = now;
+        cmd_vel.header.frame_id = m_base_frame;
         cmd_vel.twist.angular.z = kp_yaw * bearing.value();
         cmd_vel.twist.linear.x = target_speed;
         m_cmd_vel_pub.publish(cmd_vel);
